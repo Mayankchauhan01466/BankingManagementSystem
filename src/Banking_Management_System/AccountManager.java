@@ -28,7 +28,6 @@ public class AccountManager {
                 preparedStatement.setLong(1, account_number);
                 preparedStatement.setString(2, security_pin);
                 ResultSet resultSet = preparedStatement.executeQuery();
-                //String full_name = resultSet.getString("full_name");
 
 
                 if (resultSet.next()) {
@@ -73,7 +72,6 @@ public class AccountManager {
                 preparedStatement.setLong(1, account_number);
                 preparedStatement.setString(2, security_pin);
                 ResultSet resultSet = preparedStatement.executeQuery();
-               // String full_name = resultSet.getString("full_name");
 
                 if (resultSet.next()) {
                     String full_name = resultSet.getString("full_name");
