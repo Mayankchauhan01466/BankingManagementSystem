@@ -6,6 +6,7 @@ import java.util.Scanner;
 public class AccountManager {
     private Connection connection;
     private Scanner scanner;
+
     AccountManager(Connection connection, Scanner scanner){
         this.connection = connection;
         this.scanner = scanner;
@@ -27,8 +28,11 @@ public class AccountManager {
                 preparedStatement.setLong(1, account_number);
                 preparedStatement.setString(2, security_pin);
                 ResultSet resultSet = preparedStatement.executeQuery();
+                //String full_name = resultSet.getString("full_name");
+
 
                 if (resultSet.next()) {
+                    String full_name = resultSet.getString("full_name");
                     String credit_query = "UPDATE Accounts SET balance = balance + ? WHERE account_number = ?";
                     PreparedStatement preparedStatement1 = connection.prepareStatement(credit_query);
                     preparedStatement1.setDouble(1, amount);
@@ -36,6 +40,7 @@ public class AccountManager {
                     int rowsAffected = preparedStatement1.executeUpdate();
                     if (rowsAffected > 0) {
                         System.out.println("Rs."+amount+" credited Successfully");
+                        TransactionDAO.addTransaction(account_number, full_name, "CREDIT", amount);
                         connection.commit();
                         connection.setAutoCommit(true);
                         return;
@@ -68,8 +73,11 @@ public class AccountManager {
                 preparedStatement.setLong(1, account_number);
                 preparedStatement.setString(2, security_pin);
                 ResultSet resultSet = preparedStatement.executeQuery();
+               // String full_name = resultSet.getString("full_name");
 
                 if (resultSet.next()) {
+                    String full_name = resultSet.getString("full_name");
+
                     double current_balance = resultSet.getDouble("balance");
                     if (amount<=current_balance){
                         String debit_query = "UPDATE Accounts SET balance = balance - ? WHERE account_number = ?";
@@ -79,6 +87,7 @@ public class AccountManager {
                         int rowsAffected = preparedStatement1.executeUpdate();
                         if (rowsAffected > 0) {
                             System.out.println("Rs."+amount+" debited Successfully");
+                            TransactionDAO.addTransaction(account_number, full_name, "DEBIT", amount);
                             connection.commit();
                             connection.setAutoCommit(true);
                             return;
@@ -116,9 +125,23 @@ public class AccountManager {
                 preparedStatement.setLong(1, sender_account_number);
                 preparedStatement.setString(2, security_pin);
                 ResultSet resultSet = preparedStatement.executeQuery();
-
                 if (resultSet.next()) {
                     double current_balance = resultSet.getDouble("balance");
+                    String senderName = resultSet.getString("full_name");
+                    String receiverName = null;
+
+                    PreparedStatement receiverStmt =
+                            connection.prepareStatement(
+                                    "SELECT full_name FROM Accounts WHERE account_number = ?");
+
+                    receiverStmt.setLong(1, receiver_account_number);
+
+                    ResultSet receiverRs = receiverStmt.executeQuery();
+
+                    if (receiverRs.next()) {
+                        receiverName = receiverRs.getString("full_name");
+                    }
+
                     if (amount<=current_balance){
 
                         // Write debit and credit queries
@@ -139,6 +162,19 @@ public class AccountManager {
                         if (rowsAffected1 > 0 && rowsAffected2 > 0) {
                             System.out.println("Transaction Successful!");
                             System.out.println("Rs."+amount+" Transferred Successfully");
+                            TransactionDAO.addTransaction(
+                                    sender_account_number,
+                                    senderName,
+                                    "TRANSFER_DEBIT",
+                                    amount
+                            );
+                            TransactionDAO.addTransaction(
+                                    receiver_account_number,
+                                    receiverName,
+                                    "TRANSFER_CREDIT",
+                                    amount
+                            );
+
                             connection.commit();
                             connection.setAutoCommit(true);
                             return;
