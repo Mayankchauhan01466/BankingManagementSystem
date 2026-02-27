@@ -1,6 +1,6 @@
 package Banking_Management_System;
 
-public class Transaction {
+public class Transaction [
 
     private int transactionId;
     private long account_number;
