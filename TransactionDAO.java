@@ -19,7 +19,7 @@ public class TransactionDAO {
 
             int rows = ps.executeUpdate();
 
-            if (rows > 0)
+            if (rows > 0) {
                 System.out.println("✅ Transaction Added Successfully");
 
         } catch (Exception e) {
