@@ -14,6 +14,7 @@ public class BankingApp {
             Class.forName("com.mysql.cj.jdbc.Driver");
         }catch (ClassNotFoundException e){
             System.out.println(e.getMessage());
+
         }
         try{
             Connection connection = DriverManager.getConnection(url, username, password);
